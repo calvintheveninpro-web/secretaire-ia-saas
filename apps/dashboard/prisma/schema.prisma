@@ -1,0 +1,76 @@
+// Modèle de données multi-cabinets (multi-tenant).
+// SQLite par défaut (zéro config). Pour la production : passe provider = "postgresql".
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                   String        @id @default(cuid())
+  nom                  String
+  email                String        @unique
+  passwordHash         String
+  plan                 String        @default("trial") // trial | actif | suspendu
+  stripeCustomerId     String?
+  stripeSubscriptionId String?
+  createdAt            DateTime      @default(now())
+  agent                Agent?
+  calls                Call[]
+  appointments         Appointment[]
+}
+
+model Agent {
+  id                     String   @id @default(cuid())
+  tenant                 Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId               String   @unique
+  nomCabinet             String
+  metier                 String   // medecin | chirurgien | avocat | entrepreneur
+  nomProfessionnel       String
+  specialite             String?
+  adresse                String?
+  horairesOuverture      String   @default("Du lundi au vendredi, de 9h à 19h")
+  dureeRdvParDefautMin   Int      @default(30)
+  delaiMinAvantRdvHeures Int      @default(24)
+  numeroTransfertHumain  String?
+  emailNotification      String?
+  langue                 String   @default("fr-FR")
+  phraseAccueil          String
+  faqJson                String   @default("{}")
+  numeroEntrant          String?  @unique
+  actif                  Boolean  @default(true)
+}
+
+model Call {
+  id            String    @id @default(cuid())
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId      String
+  fromNumber    String
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  durationSec   Int?
+  outcome       String    @default("info") // rdv_pris | transfere | message | info | abandonne
+  transcriptJson String   @default("[]")
+  summary       String?
+}
+
+model Appointment {
+  id                String   @id @default(cuid())
+  tenant            Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId          String
+  nom               String
+  prenom            String
+  telephone         String
+  email             String?
+  motif             String
+  dateHeure         String
+  dureeMin          Int      @default(30)
+  praticien         String?
+  nouveauOuExistant String?
+  statut            String   @default("confirme") // confirme | annule | reporte
+  createdAt         DateTime @default(now())
+}

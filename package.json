@@ -1,0 +1,21 @@
+{
+  "name": "secretaire-ia-saas",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plateforme SaaS de secrétaire IA vocale — moteur vocal maison + tableau de bord multi-cabinets + facturation Stripe.",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "demo": "node demo/simulate-call.mjs",
+    "dev:voice": "npm --workspace @secretaire-ia/voice-server run dev",
+    "dev:dashboard": "npm --workspace @secretaire-ia/dashboard run dev",
+    "db:setup": "npm --workspace @secretaire-ia/dashboard run db:setup",
+    "build": "npm --workspace @secretaire-ia/dashboard run build"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "license": "UNLICENSED"
+}

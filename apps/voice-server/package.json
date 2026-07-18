@@ -1,0 +1,22 @@
+{
+  "name": "@secretaire-ia/voice-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@secretaire-ia/shared": "*",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  },
+  "//": "Fournisseurs réels chargés dynamiquement seulement si PROVIDER_MODE=real : @deepgram/sdk, openai, twilio. Installe-les au besoin."
+}
