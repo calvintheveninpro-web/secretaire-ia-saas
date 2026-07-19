@@ -2,7 +2,7 @@
 
 export const config = {
   mode: (process.env.PROVIDER_MODE ?? "mock") as "mock" | "real",
-  port: Number(process.env.VOICE_SERVER_PORT ?? 8080),
+  port: Number(process.env.PORT ?? process.env.VOICE_SERVER_PORT ?? 8080),
   dashboardApiUrl: process.env.DASHBOARD_API_URL ?? "http://localhost:3000",
 
   twilio: {

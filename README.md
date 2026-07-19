@@ -85,8 +85,11 @@ Prérequis : Node.js ≥ 18.17.
 # 1. Dépendances
 npm install
 
-# 2. Base de données de démo (SQLite) + jeu d'exemple
-npm run db:setup           # crée dev.db + un cabinet de démo
+# 2. Base de données + jeu d'exemple (PostgreSQL — ex. base gratuite Neon)
+#    Mets ton URL Postgres dans .env (DATABASE_URL), puis :
+npm run db:setup           # crée les tables + un cabinet de démo
+#    (Astuce : pour un essai 100% local sans Postgres, repasse provider = "sqlite"
+#     dans apps/dashboard/prisma/schema.prisma et DATABASE_URL="file:./dev.db".)
 
 # 3a. Tableau de bord  →  http://localhost:3000   (connexion : demo@cabinet.fr / demo1234)
 npm run dev:dashboard
@@ -97,6 +100,13 @@ npm run dev:voice          # écoute sur http://localhost:8080
 
 En mode `PROVIDER_MODE=mock` (défaut), tout fonctionne sans Twilio ni clé d'API : idéal pour
 développer l'interface et la logique.
+
+---
+
+## 🌐 Déployer en ligne
+
+Guide pas-à-pas (Neon Postgres + Vercel pour le dashboard + Railway pour le moteur vocal) :
+**voir [`DEPLOYMENT.md`](./DEPLOYMENT.md)**.
 
 ---
 

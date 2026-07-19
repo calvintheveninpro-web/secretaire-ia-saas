@@ -1,12 +1,14 @@
 // Modèle de données multi-cabinets (multi-tenant).
-// SQLite par défaut (zéro config). Pour la production : passe provider = "postgresql".
+// PostgreSQL (production & déploiement Vercel/serverless).
+// Pour un essai 100% local sans Postgres, tu peux repasser provider = "sqlite"
+// et DATABASE_URL="file:./dev.db" — mais Vercel exige Postgres.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 

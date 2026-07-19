@@ -3,7 +3,7 @@
 
 import { cookies } from "next/headers";
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
-import { prisma } from "./db.js";
+import { prisma } from "./db";
 
 const SECRET = process.env.AUTH_SECRET ?? "dev-secret-change-me";
 const COOKIE = "sia_session";

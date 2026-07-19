@@ -1,0 +1,10 @@
+node_modules
+**/node_modules
+.git
+*.db
+*.db-journal
+apps/dashboard/.next
+dist
+build
+npm-debug.log*
+.DS_Store
