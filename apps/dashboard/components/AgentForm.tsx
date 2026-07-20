@@ -9,11 +9,29 @@ export function AgentForm({ initial }: { initial: any }) {
       .map(([k, v]) => `${k}: ${v}`)
       .join("\n"),
   });
+  const [specialites, setSpecialites] = useState<string[]>(
+    String(initial.specialite ?? "")
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean),
+  );
+  const [nouvelleSpecialite, setNouvelleSpecialite] = useState("");
   const [saved, setSaved] = useState<null | boolean>(null);
   const [saving, setSaving] = useState(false);
 
   function set(key: string, value: any) {
     setForm((f: any) => ({ ...f, [key]: value }));
+  }
+
+  function ajouterSpecialite() {
+    const s = nouvelleSpecialite.trim();
+    if (!s || specialites.some((x) => x.toLowerCase() === s.toLowerCase())) return;
+    setSpecialites((list) => [...list, s]);
+    setNouvelleSpecialite("");
+  }
+
+  function retirerSpecialite(s: string) {
+    setSpecialites((list) => list.filter((x) => x !== s));
   }
 
   async function save() {
@@ -29,7 +47,7 @@ export function AgentForm({ initial }: { initial: any }) {
     const res = await fetch("/api/agent", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, faqCabinet }),
+      body: JSON.stringify({ ...form, specialite: specialites.join(", "), faqCabinet }),
     });
     setSaving(false);
     setSaved(res.ok);
@@ -56,8 +74,35 @@ export function AgentForm({ initial }: { initial: any }) {
           <input value={form.nomProfessionnel ?? ""} onChange={(e) => set("nomProfessionnel", e.target.value)} />
         </div>
         <div>
-          <label>Spécialité</label>
-          <input value={form.specialite ?? ""} onChange={(e) => set("specialite", e.target.value)} />
+          <label>Spécialités (vous pouvez en ajouter plusieurs)</label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <input
+              value={nouvelleSpecialite}
+              placeholder="Ex. : Médecine générale"
+              onChange={(e) => setNouvelleSpecialite(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  ajouterSpecialite();
+                }
+              }}
+            />
+            <button className="btn secondary" type="button" onClick={ajouterSpecialite}>
+              Ajouter
+            </button>
+          </div>
+          {specialites.length > 0 && (
+            <div className="tags">
+              {specialites.map((s) => (
+                <span className="tag" key={s}>
+                  {s}
+                  <button type="button" onClick={() => retirerSpecialite(s)} aria-label={`Retirer ${s}`}>
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
         <div>
           <label>Adresse</label>
@@ -75,6 +120,44 @@ export function AgentForm({ initial }: { initial: any }) {
           <label>Numéro entrant (Twilio)</label>
           <input value={form.numeroEntrant ?? ""} onChange={(e) => set("numeroEntrant", e.target.value)} />
         </div>
+        <div>
+          <label>Email de notification du cabinet</label>
+          <input
+            type="email"
+            value={form.emailNotification ?? ""}
+            placeholder="cabinet@exemple.fr"
+            onChange={(e) => set("emailNotification", e.target.value)}
+          />
+        </div>
+        <div>
+          <label>État de l'agent</label>
+          <select
+            value={form.actif ? "actif" : "pause"}
+            onChange={(e) => set("actif", e.target.value === "actif")}
+          >
+            <option value="actif">Actif (l'IA décroche les appels)</option>
+            <option value="pause">En pause (l'IA ne répond plus)</option>
+          </select>
+        </div>
+        <div>
+          <label>Durée d'un rendez-vous (minutes)</label>
+          <input
+            type="number"
+            min={5}
+            step={5}
+            value={form.dureeRdvParDefautMin ?? 30}
+            onChange={(e) => set("dureeRdvParDefautMin", Number(e.target.value))}
+          />
+        </div>
+        <div>
+          <label>Délai minimum avant un rendez-vous (heures)</label>
+          <input
+            type="number"
+            min={0}
+            value={form.delaiMinAvantRdvHeures ?? 24}
+            onChange={(e) => set("delaiMinAvantRdvHeures", Number(e.target.value))}
+          />
+        </div>
       </div>
 
       <label>Phrase d'accueil</label>
@@ -87,7 +170,7 @@ export function AgentForm({ initial }: { initial: any }) {
         <button className="btn" onClick={save} disabled={saving}>
           {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
-        {saved === true && <span className="badge ok">Enregistré ✓</span>}
+        {saved === true && <span className="badge ok">Enregistré</span>}
         {saved === false && <span className="badge warn">Erreur</span>}
       </div>
     </div>

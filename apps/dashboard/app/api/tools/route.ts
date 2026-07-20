@@ -3,6 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { upsertClientFromBooking } from "@/lib/clients";
 
 export async function POST(req: Request) {
   const { tenantId, tool } = await req.json();
@@ -31,6 +32,13 @@ export async function POST(req: Request) {
             nouveauOuExistant: args.nouveau_ou_existant ? str(args.nouveau_ou_existant) : null,
             statut: "confirme",
           },
+        });
+        // La fiche client est créée ou complétée automatiquement à chaque prise de RDV.
+        await upsertClientFromBooking(tenantId, {
+          nom: str(args.nom),
+          prenom: str(args.prenom),
+          telephone: str(args.telephone),
+          email: args.email ? str(args.email) : null,
         });
         // TODO production : pousser aussi l'événement dans Google Calendar ici.
         return ok({ rdvId: rdv.id, confirme: true });

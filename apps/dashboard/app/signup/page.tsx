@@ -3,7 +3,7 @@ export default function SignupPage({ searchParams }: { searchParams: { error?: s
     <div className="center">
       <div className="card">
         <h1>Créer un cabinet</h1>
-        <p className="muted">Lance ta secrétaire IA en quelques secondes.</p>
+        <p className="muted">Lancez votre secrétaire IA en quelques secondes.</p>
         {searchParams.error === "exists" && <p style={{ color: "var(--danger)" }}>Cet email existe déjà.</p>}
         {searchParams.error === "invalid" && <p style={{ color: "var(--danger)" }}>Mot de passe trop court (min. 6).</p>}
         <form method="post" action="/api/auth/signup">

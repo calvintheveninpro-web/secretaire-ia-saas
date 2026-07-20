@@ -150,7 +150,7 @@ Définis dans `prompt/secretaire-ia-prompt.json`, exécutés par `app/api/tools/
 
 ## 💰 Le modèle pour vendre
 
-- **SaaS par abonnement** : page facturation Stripe déjà intégrée (ex. 149 €/mois dans la démo).
+- **SaaS par abonnement** : offre unique tout compris à 279,99 €/mois, page facturation Stripe déjà intégrée.
 - **Onboarding rapide** : chaque cabinet remplit sa fiche dans « Mon agent » — le prompt s'adapte
   automatiquement à son métier (médecin, chirurgien, avocat, entrepreneur).
 - **Argument de vente** : ne rate plus aucun appel, disponible 24/7, conforme AI Act (l'agent

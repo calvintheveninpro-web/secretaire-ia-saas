@@ -2,6 +2,12 @@ import { getSessionTenant } from "@/lib/auth";
 import { stripeConfigured } from "@/lib/stripe";
 import { SubscribeButton } from "@/components/SubscribeButton";
 
+const PLAN_LABEL: Record<string, string> = {
+  trial: "Essai",
+  actif: "Actif",
+  suspendu: "Suspendu",
+};
+
 export default async function BillingPage({ searchParams }: { searchParams: { success?: string; demo?: string } }) {
   const tenant = await getSessionTenant();
   if (!tenant) return null;
@@ -15,17 +21,27 @@ export default async function BillingPage({ searchParams }: { searchParams: { su
       <div className="grid grid-2" style={{ marginTop: 16 }}>
         <div className="card">
           <h3>Plan actuel</h3>
-          <p className="stat" style={{ fontSize: 24 }}>{tenant.plan}</p>
+          <p className="stat" style={{ fontSize: 24 }}>{PLAN_LABEL[tenant.plan] ?? tenant.plan}</p>
           <p className="muted">
             {tenant.plan === "actif"
-              ? "Ton agent est pleinement opérationnel."
-              : "Active un abonnement pour mettre ta secrétaire IA en production."}
+              ? "Votre agent est pleinement opérationnel."
+              : "Activez l'abonnement pour mettre votre secrétaire IA en production."}
           </p>
         </div>
         <div className="card">
-          <h3>Secrétaire IA — Premium</h3>
-          <p className="stat" style={{ fontSize: 28 }}>149 € <span className="muted" style={{ fontSize: 14 }}>/ mois</span></p>
-          <p className="muted">Appels illimités* · prise de RDV · transfert · journal & transcriptions.</p>
+          <h3>Offre unique — Tout compris</h3>
+          <p className="stat" style={{ fontSize: 28 }}>
+            279,99 € <span className="muted" style={{ fontSize: 14 }}>/ mois</span>
+          </p>
+          <p className="muted">Un seul abonnement, sans engagement, qui couvre tout :</p>
+          <ul className="muted" style={{ paddingLeft: 18, marginTop: 8 }}>
+            <li>Agent IA vocal et écrit, disponible 24h/24 et 7j/7</li>
+            <li>Prise, annulation et report de rendez-vous</li>
+            <li>Fiches clients automatisées et journal des appels</li>
+            <li>Transfert vers un humain et détection des urgences</li>
+            <li>Connecteurs (Google Calendar, Outlook, Doctolib…)</li>
+            <li>Confirmations par SMS et par email</li>
+          </ul>
           <SubscribeButton />
           {!stripeConfigured() && (
             <p className="muted" style={{ marginTop: 10, fontSize: 12 }}>

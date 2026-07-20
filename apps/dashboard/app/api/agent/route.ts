@@ -61,6 +61,8 @@ export async function PUT(req: Request) {
       specialite: body.specialite || null,
       adresse: body.adresse || null,
       horairesOuverture: body.horairesOuverture,
+      dureeRdvParDefautMin: Number(body.dureeRdvParDefautMin) > 0 ? Number(body.dureeRdvParDefautMin) : 30,
+      delaiMinAvantRdvHeures: Number(body.delaiMinAvantRdvHeures) >= 0 ? Number(body.delaiMinAvantRdvHeures) : 24,
       numeroTransfertHumain: body.numeroTransfertHumain || null,
       emailNotification: body.emailNotification || null,
       phraseAccueil: body.phraseAccueil,
