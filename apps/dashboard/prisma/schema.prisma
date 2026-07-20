@@ -24,6 +24,7 @@ model Tenant {
   agent                Agent?
   calls                Call[]
   appointments         Appointment[]
+  clients              Client[]
 }
 
 model Agent {
@@ -33,7 +34,7 @@ model Agent {
   nomCabinet             String
   metier                 String   // medecin | chirurgien | avocat | entrepreneur
   nomProfessionnel       String
-  specialite             String?
+  specialite             String?  // Une ou plusieurs spécialités, séparées par des virgules
   adresse                String?
   horairesOuverture      String   @default("Du lundi au vendredi, de 9h à 19h")
   dureeRdvParDefautMin   Int      @default(30)
@@ -45,6 +46,23 @@ model Agent {
   faqJson                String   @default("{}")
   numeroEntrant          String?  @unique
   actif                  Boolean  @default(true)
+  connecteursJson        String   @default("{}") // État des connecteurs (Google Calendar, Outlook...)
+}
+
+// Fiche client générée automatiquement à partir des rendez-vous pris par l'IA.
+model Client {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  nom       String
+  prenom    String
+  telephone String
+  email     String?
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, telephone])
 }
 
 model Call {
