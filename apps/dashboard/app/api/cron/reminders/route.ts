@@ -1,5 +1,6 @@
-// GET /api/cron/reminders — appelé chaque heure par le cron Vercel (vercel.json).
+// GET /api/cron/reminders — appelé chaque jour à 7 h UTC par le cron Vercel (vercel.json).
 // Envoie le SMS de rappel pour chaque rendez-vous confirmé qui a lieu dans les 24 prochaines heures.
+// (Le plan Vercel Hobby limite les crons à une exécution quotidienne.)
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
