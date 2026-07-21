@@ -12,6 +12,7 @@ const OUTCOME_LABEL: Record<string, string> = {
   message: "Message",
   info: "Information",
   abandonne: "Abandonné",
+  demarchage: "Démarchage écarté",
 };
 
 export async function GET() {

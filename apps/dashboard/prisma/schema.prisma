@@ -28,6 +28,7 @@ model Tenant {
   intakes              Intake[]
   messages             Message[]
   emails               EmailMessage[]
+  rappels              OutboundTask[]
 }
 
 model Agent {
@@ -148,7 +149,20 @@ model Intake {
   potentiel      String   @default("standard") // fort | standard | hors_perimetre
   statut         String   @default("nouveau") // nouveau | rdv_pris | converti | perdu
   conflitDetecte Boolean  @default(false)
+  relanceEnvoyee Boolean  @default(false) // SMS de relance déjà envoyé au prospect dormant
   createdAt      DateTime @default(now())
+}
+
+// Tâche de rappel sortant : appel manqué à rappeler, prospect à relancer, RDV à confirmer.
+model OutboundTask {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  telephone String
+  type      String   @default("rappel_manque") // rappel_manque | relance_prospect | confirmation
+  motif     String?
+  statut    String   @default("a_faire") // a_faire | fait | annule
+  createdAt DateTime @default(now())
 }
 
 // Journal des SMS et alertes émis par la plateforme (envoyés ou simulés sans fournisseur).

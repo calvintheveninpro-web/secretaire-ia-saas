@@ -19,6 +19,7 @@ export function buildSystemPrompt(config: AgentConfig, promptJson: PromptJson): 
   const annulation = promptJson.gestion_annulation_report ?? {};
   const horsHoraires = promptJson.comportement_hors_horaires ?? {};
   const intake = promptJson.intake_juridique ?? {};
+  const demarchage = promptJson.filtrage_demarchage ?? {};
   const estAvocat = config.metier === "avocat";
 
   const faq = config.faqCabinet ?? {};
@@ -79,6 +80,16 @@ export function buildSystemPrompt(config: AgentConfig, promptJson: PromptJson): 
     `# DÉROULÉ DE LA CONVERSATION`,
     ...Object.values(deroule).map((s) => `- ${fill(String(s), config)}`),
     ``,
+    ...(demarchage.principe
+      ? [
+          `# FILTRAGE DU DÉMARCHAGE`,
+          demarchage.principe,
+          ...(demarchage.detection ?? []).map((d: string) => `- ${d}`),
+          `Action : ${demarchage.action ?? ""}`,
+          `Prudence : ${demarchage.prudence ?? ""}`,
+          ``,
+        ]
+      : []),
     `# GESTION DES URGENCES`,
     urgences.principe ?? "",
     urgences.note_metier_sante && (config.metier === "medecin" || config.metier === "chirurgien")

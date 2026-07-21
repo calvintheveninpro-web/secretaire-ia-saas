@@ -290,6 +290,15 @@ async function seedAvocat() {
     },
   });
 
+  await prisma.outboundTask.create({
+    data: {
+      tenantId: tenant.id,
+      telephone: "+33678901234",
+      type: "relance_prospect",
+      motif: "Sophie Garnier — Droit de la famille sans rendez-vous depuis 48 h",
+    },
+  });
+
   await prisma.emailMessage.create({
     data: {
       tenantId: tenant.id,

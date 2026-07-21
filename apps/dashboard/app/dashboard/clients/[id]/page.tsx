@@ -14,6 +14,7 @@ const OUTCOME_LABEL: Record<string, string> = {
   message: "Message",
   info: "Information",
   abandonne: "Abandonné",
+  demarchage: "Démarchage écarté",
 };
 
 export default async function ClientDetailPage({ params }: { params: { id: string } }) {
