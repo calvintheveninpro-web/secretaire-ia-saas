@@ -53,6 +53,9 @@ export function buildSystemPrompt(config: AgentConfig, promptJson: PromptJson): 
     `- Cabinet : ${config.nomCabinet}`,
     `- Professionnel : ${config.nomProfessionnel}${config.specialite ? ` (${config.specialite})` : ""}`,
     estAvocat && config.domainesDroit ? `- Domaines de droit pratiqués : ${config.domainesDroit}` : "",
+    config.praticiens
+      ? `- Praticiens disponibles : ${config.praticiens}. Oriente l'appelant vers le praticien dont le domaine correspond à sa demande, et indique son nom lors de la prise de rendez-vous (paramètre 'praticien').`
+      : "",
     `- Adresse : ${config.adresse ?? "non renseignée"}`,
     `- Horaires : ${config.horairesOuverture}`,
     faqLignes ? `Autres informations pratiques :\n${faqLignes}` : ``,

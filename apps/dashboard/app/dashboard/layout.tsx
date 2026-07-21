@@ -19,6 +19,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <a href="/dashboard/emails">Emails</a>
         <a href="/dashboard/messages">Messages</a>
         <a href="/dashboard/connectors">Connecteurs</a>
+        <a href="/dashboard/compliance">Conformité</a>
         <a href="/dashboard/billing">Abonnement</a>
         <span className="spacer" />
         <span className="muted">{tenant.nom}</span>

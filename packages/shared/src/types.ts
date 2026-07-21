@@ -27,6 +27,8 @@ export interface AgentConfig {
   actif: boolean;
   /** Avocats : domaines de droit pratiqués par le cabinet (séparés par des virgules). */
   domainesDroit?: string;
+  /** Praticiens disponibles du cabinet, au format « Nom (domaines) ; Nom (domaines) ». */
+  praticiens?: string;
   /** Envoyer un lien de paiement à la prise de rendez-vous (première consultation payante). */
   consultationPayante?: boolean;
   montantConsultationEur?: number;

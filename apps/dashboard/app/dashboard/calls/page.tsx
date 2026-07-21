@@ -20,7 +20,10 @@ export default async function CallsPage() {
 
   return (
     <div>
-      <h1>Journal des appels</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <h1>Journal des appels</h1>
+        <a className="btn secondary small" href="/api/export/calls">Exporter en CSV</a>
+      </div>
       {calls.length === 0 && <p className="muted">Aucun appel pour l'instant.</p>}
       {calls.map((c) => {
         const transcript = JSON.parse(c.transcriptJson || "[]") as { role: string; text: string }[];
@@ -35,6 +38,12 @@ export default async function CallsPage() {
               </div>
               <span className="muted">
                 {new Date(c.startedAt).toLocaleString("fr-FR")} · {c.durationSec ?? "?"}s
+                {transcript.length > 0 && (
+                  <>
+                    {" · "}
+                    <a href={`/api/calls/${c.id}/transcript`}>Télécharger la transcription</a>
+                  </>
+                )}
               </span>
             </div>
             {c.summary && <p className="muted">{c.summary}</p>}

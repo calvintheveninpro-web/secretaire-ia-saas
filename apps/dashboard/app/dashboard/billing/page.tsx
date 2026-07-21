@@ -41,7 +41,8 @@ export default async function BillingPage({ searchParams }: { searchParams: { su
             <li>Qualification juridique des prospects et détection des conflits d'intérêts</li>
             <li>Rappels de rendez-vous par SMS et consultation payante en ligne</li>
             <li>Transfert vers un humain et détection des urgences</li>
-            <li>Connecteurs (Google Calendar, Outlook, Doctolib…)</li>
+            <li>Synchronisation Google Calendar et connecteurs (Outlook, Doctolib…)</li>
+            <li>Multi-praticiens, exports et conformité RGPD / AI Act intégrée</li>
             <li>Confirmations par SMS et par email</li>
           </ul>
           <SubscribeButton />

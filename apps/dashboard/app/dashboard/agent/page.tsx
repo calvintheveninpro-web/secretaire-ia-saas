@@ -1,10 +1,19 @@
+import { prisma } from "@/lib/db";
 import { getSessionTenant } from "@/lib/auth";
 import { AgentForm } from "@/components/AgentForm";
+import { PraticienManager } from "@/components/PraticienManager";
+
+export const dynamic = "force-dynamic";
 
 export default async function AgentPage() {
   const tenant = await getSessionTenant();
   if (!tenant?.agent) return null;
   const a = tenant.agent;
+
+  const praticiens = await prisma.praticien.findMany({
+    where: { agentId: a.id },
+    orderBy: { nom: "asc" },
+  });
 
   const initial = {
     nomCabinet: a.nomCabinet,
@@ -35,6 +44,14 @@ export default async function AgentPage() {
         automatiquement le ton et les questions.
       </p>
       <AgentForm initial={initial} />
+      <PraticienManager
+        initial={praticiens.map((p) => ({
+          id: p.id,
+          nom: p.nom,
+          specialites: p.specialites,
+          actif: p.actif,
+        }))}
+      />
     </div>
   );
 }

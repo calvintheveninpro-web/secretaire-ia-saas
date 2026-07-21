@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { upsertClientFromBooking } from "@/lib/clients";
 import { adverseEstClient, appelantEstAdverse } from "@/lib/conflicts";
 import { sendSms, recordAlert } from "@/lib/sms";
+import { googleConnecte, creneauxLibres, creerEvenement } from "@/lib/google";
 
 export async function POST(req: Request) {
   const { tenantId, tool } = await req.json();
@@ -15,7 +16,12 @@ export async function POST(req: Request) {
   try {
     switch (name) {
       case "check_availability": {
-        // TODO production : lire les vraies disponibilités (Google Calendar / logiciel métier).
+        // Si Google Calendar est connecté, on propose les vrais créneaux libres de l'agenda.
+        const agent = await prisma.agent.findUnique({ where: { tenantId } });
+        if (agent && googleConnecte(agent)) {
+          const libres = await creneauxLibres(agent);
+          if (libres && libres.length > 0) return ok({ creneaux: libres });
+        }
         return ok({ creneaux: nextSlots() });
       }
 
@@ -60,7 +66,15 @@ export async function POST(req: Request) {
           }
           await sendSms(tenantId, telephone, contenu, paiement ? "paiement" : "confirmation");
         }
-        // TODO production : pousser aussi l'événement dans Google Calendar ici.
+        // Si Google Calendar est connecté, le rendez-vous est aussi créé dans l'agenda.
+        if (agent && googleConnecte(agent)) {
+          await creerEvenement(agent, {
+            titre: `RDV ${str(args.prenom)} ${str(args.nom)} — ${str(args.motif) || "consultation"}`,
+            description: `Rendez-vous pris par la secrétaire IA.\nTéléphone : ${telephone}${args.praticien ? `\nPraticien : ${str(args.praticien)}` : ""}`,
+            dateHeure: str(args.date_heure),
+            dureeMin: Number(args.duree_min ?? agent.dureeRdvParDefautMin ?? 30),
+          });
+        }
         return ok({ rdvId: rdv.id, confirme: true });
       }
 

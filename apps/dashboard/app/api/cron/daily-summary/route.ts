@@ -17,6 +17,18 @@ export async function GET(req: Request) {
   const depuis = new Date(Date.now() - 24 * 3600 * 1000);
   const agents = await prisma.agent.findMany({ where: { actif: true } });
   let envoyes = 0;
+  let purges = 0;
+
+  // Purge de conservation (RGPD) : suppression des appels plus anciens que la durée
+  // choisie par chaque cabinet dans l'onglet Conformité (0 = conservation illimitée).
+  const tousAgents = await prisma.agent.findMany({ where: { retentionJours: { gt: 0 } } });
+  for (const agent of tousAgents) {
+    const limite = new Date(Date.now() - agent.retentionJours * 24 * 3600 * 1000);
+    const res = await prisma.call.deleteMany({
+      where: { tenantId: agent.tenantId, startedAt: { lt: limite } },
+    });
+    purges += res.count;
+  }
 
   for (const agent of agents) {
     const tenantId = agent.tenantId;
@@ -56,5 +68,5 @@ export async function GET(req: Request) {
     envoyes++;
   }
 
-  return NextResponse.json({ ok: true, resumesEnvoyes: envoyes });
+  return NextResponse.json({ ok: true, resumesEnvoyes: envoyes, appelsPurges: purges });
 }
