@@ -55,6 +55,20 @@ model Agent {
   montantConsultationEur Int?     // Montant de la première consultation
   lienPaiement           String?  // Lien de paiement Stripe (Payment Link) du cabinet
   emailWebhookToken      String?  @unique // Jeton du webhook d'emails entrants
+  googleTokensJson       String?  // Jetons OAuth Google Calendar (access + refresh)
+  googleCalendarId       String   @default("primary") // Agenda Google utilisé pour les RDV
+  retentionJours         Int      @default(0) // Conservation des appels en jours (0 = illimitée)
+  praticiens             Praticien[]
+}
+
+// Praticien du cabinet : l'IA oriente l'appelant vers le bon praticien.
+model Praticien {
+  id          String  @id @default(cuid())
+  agent       Agent   @relation(fields: [agentId], references: [id])
+  agentId     String
+  nom         String
+  specialites String? // Domaines ou spécialités du praticien, séparés par des virgules
+  actif       Boolean @default(true)
 }
 
 // Email entrant reçu par la secrétaire IA, avec le brouillon de réponse proposé.

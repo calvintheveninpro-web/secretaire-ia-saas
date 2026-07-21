@@ -62,10 +62,34 @@ const CATALOGUE: {
   },
 ];
 
-export function ConnectorList({ initial }: { initial: Record<string, EtatConnecteur> }) {
+export function ConnectorList({
+  initial,
+  googleOauth = false,
+  googleDejaConnecte = false,
+}: {
+  initial: Record<string, EtatConnecteur>;
+  googleOauth?: boolean;
+  googleDejaConnecte?: boolean;
+}) {
   const [etat, setEtat] = useState<Record<string, EtatConnecteur>>(initial);
   const [enCours, setEnCours] = useState<string | null>(null);
   const [erreur, setErreur] = useState<string | null>(null);
+  const [googleConnecte, setGoogleConnecte] = useState(googleDejaConnecte);
+
+  async function deconnecterGoogle() {
+    setEnCours("google_calendar");
+    const res = await fetch("/api/google/disconnect", { method: "POST" });
+    setEnCours(null);
+    if (res.ok) {
+      setGoogleConnecte(false);
+      setEtat((e) => ({
+        ...e,
+        google_calendar: { ...(e.google_calendar ?? {}), actif: false },
+      }));
+    } else {
+      setErreur("La déconnexion a échoué, réessayez.");
+    }
+  }
 
   async function persist(suivant: Record<string, EtatConnecteur>, id: string) {
     setEnCours(id);
@@ -106,6 +130,40 @@ export function ConnectorList({ initial }: { initial: Record<string, EtatConnect
       {erreur && <p style={{ color: "var(--danger)" }}>{erreur}</p>}
       {CATALOGUE.map((c) => {
         const e = etat[c.id] ?? { actif: false };
+        // Google Calendar en vraie connexion OAuth quand la plateforme est configurée.
+        if (c.id === "google_calendar" && googleOauth) {
+          return (
+            <div className="card connector" key={c.id}>
+              <div className="infos">
+                <h3 style={{ margin: 0 }}>
+                  {c.nom}{" "}
+                  {googleConnecte ? (
+                    <span className="badge ok" style={{ marginLeft: 8 }}>Connecté via Google</span>
+                  ) : (
+                    <span className="badge info" style={{ marginLeft: 8 }}>Non connecté</span>
+                  )}
+                </h3>
+                <p className="muted" style={{ marginTop: 6 }}>{c.description}</p>
+                {googleConnecte && (
+                  <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+                    L'IA propose les créneaux réellement libres de votre agenda et y ajoute chaque rendez-vous pris.
+                  </p>
+                )}
+              </div>
+              {googleConnecte ? (
+                <button
+                  className="btn secondary"
+                  onClick={deconnecterGoogle}
+                  disabled={enCours === c.id}
+                >
+                  {enCours === c.id ? "Patientez…" : "Déconnecter"}
+                </button>
+              ) : (
+                <a className="btn" href="/api/google/auth">Connecter avec Google</a>
+              )}
+            </div>
+          );
+        }
         return (
           <div className="card connector" key={c.id}>
             <div className="infos">

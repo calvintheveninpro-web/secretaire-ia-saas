@@ -188,6 +188,16 @@ async function seedAvocat() {
   const dejaSeede = await prisma.intake.count({ where: { tenantId: tenant.id } });
   if (dejaSeede > 0) return;
 
+  const agentAvocat = await prisma.agent.findUnique({ where: { tenantId: tenant.id } });
+  if (agentAvocat) {
+    await prisma.praticien.createMany({
+      data: [
+        { agentId: agentAvocat.id, nom: "Maître Claire Legrand", specialites: "Droit du travail, Droit des affaires" },
+        { agentId: agentAvocat.id, nom: "Maître Paul Durand", specialites: "Droit de la famille" },
+      ],
+    });
+  }
+
   await prisma.client.upsert({
     where: { tenantId_telephone: { tenantId: tenant.id, telephone: "+33656789012" } },
     update: {},

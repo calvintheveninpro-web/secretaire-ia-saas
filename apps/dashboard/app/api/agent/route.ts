@@ -29,6 +29,13 @@ function toAgentConfig(agent: any) {
     consultationPayante: agent.consultationPayante,
     montantConsultationEur: agent.montantConsultationEur ?? undefined,
     lienPaiement: agent.lienPaiement ?? undefined,
+    praticiens:
+      agent.praticiens && agent.praticiens.length > 0
+        ? agent.praticiens
+            .filter((p: any) => p.actif)
+            .map((p: any) => (p.specialites ? `${p.nom} (${p.specialites})` : p.nom))
+            .join(" ; ") || undefined
+        : undefined,
   };
 }
 
@@ -43,13 +50,20 @@ function safeJson(s: string) {
 export async function GET(req: Request) {
   const number = new URL(req.url).searchParams.get("number");
   if (number) {
-    const agent = await prisma.agent.findUnique({ where: { numeroEntrant: number } });
+    const agent = await prisma.agent.findUnique({
+      where: { numeroEntrant: number },
+      include: { praticiens: true },
+    });
     if (!agent) return NextResponse.json({ error: "not_found" }, { status: 404 });
     return NextResponse.json(toAgentConfig(agent));
   }
   const tenant = await getSessionTenant();
   if (!tenant?.agent) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  return NextResponse.json(toAgentConfig(tenant.agent));
+  const agent = await prisma.agent.findUnique({
+    where: { tenantId: tenant.id },
+    include: { praticiens: true },
+  });
+  return NextResponse.json(toAgentConfig(agent));
 }
 
 export async function PUT(req: Request) {
