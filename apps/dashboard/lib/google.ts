@@ -122,7 +122,7 @@ async function accessToken(agent: Agent): Promise<string | null> {
  * Créneaux réellement libres dans l'agenda Google : on part des créneaux types
  * des prochains jours ouvrés et on écarte ceux qui chevauchent un événement.
  */
-export async function creneauxLibres(agent: Agent): Promise<string[] | null> {
+export async function creneauxLibres(agent: Agent, max = 3): Promise<string[] | null> {
   const token = await accessToken(agent);
   if (!token) return null;
 
@@ -171,7 +171,7 @@ export async function creneauxLibres(agent: Agent): Promise<string[] | null> {
     });
   });
 
-  return libres.slice(0, 3).map((c) => c.label);
+  return libres.slice(0, max).map((c) => c.label);
 }
 
 /** Crée l'événement du rendez-vous dans l'agenda Google. Renvoie l'identifiant ou null. */

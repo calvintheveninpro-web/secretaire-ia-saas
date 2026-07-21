@@ -180,6 +180,7 @@ async function seedAvocat() {
           consultationPayante: true,
           montantConsultationEur: 90,
           lienPaiement: "https://buy.stripe.com/exemple-consultation",
+          bookingToken: "demo-legrand-reservation",
         },
       },
     },

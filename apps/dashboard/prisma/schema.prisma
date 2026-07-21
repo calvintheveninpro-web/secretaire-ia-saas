@@ -56,6 +56,7 @@ model Agent {
   montantConsultationEur Int?     // Montant de la première consultation
   lienPaiement           String?  // Lien de paiement Stripe (Payment Link) du cabinet
   emailWebhookToken      String?  @unique // Jeton du webhook d'emails entrants
+  bookingToken           String?  @unique // Jeton de la page publique de réservation en ligne
   googleTokensJson       String?  // Jetons OAuth Google Calendar (access + refresh)
   googleCalendarId       String   @default("primary") // Agenda Google utilisé pour les RDV
   retentionJours         Int      @default(0) // Conservation des appels en jours (0 = illimitée)

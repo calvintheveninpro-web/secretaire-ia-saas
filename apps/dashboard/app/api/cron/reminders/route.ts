@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendSms } from "@/lib/sms";
+import { cancelUrl } from "@/lib/booking";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
     await sendSms(
       rdv.tenantId,
       rdv.telephone,
-      `${agent?.nomCabinet ?? "Votre cabinet"} : rappel de votre rendez-vous demain, le ${date.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}. Répondez ANNULER pour annuler.`,
+      `${agent?.nomCabinet ?? "Votre cabinet"} : rappel de votre rendez-vous demain, le ${date.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}. Pour annuler : ${cancelUrl(rdv.id)}`,
       "rappel",
     );
     await prisma.appointment.update({

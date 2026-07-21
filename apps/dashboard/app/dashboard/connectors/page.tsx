@@ -1,6 +1,8 @@
 import { getSessionTenant } from "@/lib/auth";
 import { googleConfigured, googleConnecte } from "@/lib/google";
 import { ConnectorList } from "@/components/ConnectorList";
+import { BookingConfig } from "@/components/BookingConfig";
+import { APP_URL } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,9 @@ export default async function ConnectorsPage({
           La connexion Google n'est pas encore configurée sur la plateforme (identifiants OAuth manquants).
         </p>
       )}
+      <BookingConfig
+        initialUrl={tenant.agent.bookingToken ? `${APP_URL}/reserver/${tenant.agent.bookingToken}` : null}
+      />
       <ConnectorList
         initial={etat}
         googleOauth={googleConfigured()}
