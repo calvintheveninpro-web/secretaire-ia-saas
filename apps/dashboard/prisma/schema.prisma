@@ -27,6 +27,7 @@ model Tenant {
   clients              Client[]
   intakes              Intake[]
   messages             Message[]
+  emails               EmailMessage[]
 }
 
 model Agent {
@@ -53,6 +54,21 @@ model Agent {
   consultationPayante    Boolean  @default(false) // Envoyer un lien de paiement à la prise de RDV
   montantConsultationEur Int?     // Montant de la première consultation
   lienPaiement           String?  // Lien de paiement Stripe (Payment Link) du cabinet
+  emailWebhookToken      String?  @unique // Jeton du webhook d'emails entrants
+}
+
+// Email entrant reçu par la secrétaire IA, avec le brouillon de réponse proposé.
+model EmailMessage {
+  id        String   @id @default(cuid())
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  deEmail   String
+  objet     String
+  contenu   String
+  brouillon String?  // Réponse proposée par l'IA, à valider par le cabinet
+  reponse   String?  // Réponse réellement envoyée
+  statut    String   @default("nouveau") // nouveau | repondu | ignore
+  createdAt DateTime @default(now())
 }
 
 // Fiche client générée automatiquement à partir des rendez-vous pris par l'IA.
