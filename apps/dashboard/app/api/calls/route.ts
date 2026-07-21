@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getSessionTenant } from "@/lib/auth";
+import { sendSms } from "@/lib/sms";
 
 export async function POST(req: Request) {
   const body = await req.json();
@@ -21,6 +22,26 @@ export async function POST(req: Request) {
       summary: body.summary ?? null,
     },
   });
+
+  // Appel abandonné : SMS immédiat à l'appelant et tâche de rappel pour le cabinet.
+  if (call.outcome === "abandonne" && call.fromNumber && call.fromNumber !== "inconnu") {
+    const agent = await prisma.agent.findUnique({ where: { tenantId: call.tenantId } });
+    await sendSms(
+      call.tenantId,
+      call.fromNumber,
+      `${agent?.nomCabinet ?? "Le cabinet"} : nous avons bien reçu votre appel. Rappelez-nous quand vous voulez, notre assistant répond 24h/24, ou répondez à ce SMS.`,
+      "notification",
+    );
+    await prisma.outboundTask.create({
+      data: {
+        tenantId: call.tenantId,
+        telephone: call.fromNumber,
+        type: "rappel_manque",
+        motif: call.summary ?? "Appel interrompu avant la fin",
+      },
+    });
+  }
+
   return NextResponse.json({ ok: true, id: call.id });
 }
 

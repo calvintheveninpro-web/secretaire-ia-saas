@@ -5,6 +5,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendEmail } from "@/lib/email";
+import { sendSms } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,44 @@ export async function GET(req: Request) {
   const agents = await prisma.agent.findMany({ where: { actif: true } });
   let envoyes = 0;
   let purges = 0;
+  let relances = 0;
+
+  // Relance des prospects dormants : qualifiés il y a plus de 48 h, toujours sans
+  // rendez-vous et jamais relancés — un seul SMS de relance, puis tâche de suivi.
+  const il48h = new Date(Date.now() - 48 * 3600 * 1000);
+  const dormants = await prisma.intake.findMany({
+    where: {
+      statut: "nouveau",
+      relanceEnvoyee: false,
+      createdAt: { lt: il48h },
+      conflitDetecte: false,
+      potentiel: { not: "hors_perimetre" },
+    },
+    take: 100,
+  });
+  for (const prospect of dormants) {
+    const agent = agents.find((a) => a.tenantId === prospect.tenantId);
+    if (!agent || !prospect.telephone) continue;
+    await sendSms(
+      prospect.tenantId,
+      prospect.telephone,
+      `${agent.nomCabinet} : suite à votre appel, souhaitez-vous convenir d'un rendez-vous ? Rappelez-nous quand vous voulez, notre assistant répond 24h/24.`,
+      "notification",
+    );
+    await prisma.intake.update({
+      where: { id: prospect.id },
+      data: { relanceEnvoyee: true },
+    });
+    await prisma.outboundTask.create({
+      data: {
+        tenantId: prospect.tenantId,
+        telephone: prospect.telephone,
+        type: "relance_prospect",
+        motif: `${[prospect.prenom, prospect.nom].filter(Boolean).join(" ") || "Prospect"} — ${prospect.domaineDroit ?? "demande"} sans rendez-vous depuis 48 h`,
+      },
+    });
+    relances++;
+  }
 
   // Purge de conservation (RGPD) : suppression des appels plus anciens que la durée
   // choisie par chaque cabinet dans l'onglet Conformité (0 = conservation illimitée).
@@ -68,5 +107,10 @@ export async function GET(req: Request) {
     envoyes++;
   }
 
-  return NextResponse.json({ ok: true, resumesEnvoyes: envoyes, appelsPurges: purges });
+  return NextResponse.json({
+    ok: true,
+    resumesEnvoyes: envoyes,
+    appelsPurges: purges,
+    prospectsRelances: relances,
+  });
 }
