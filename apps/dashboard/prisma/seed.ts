@@ -141,8 +141,144 @@ async function main() {
     },
   });
 
+  await seedAvocat();
+
   console.log("Données de démonstration créées.");
-  console.log("Connexion : demo@cabinet.fr / demo1234");
+  console.log("Connexion médecin : demo@cabinet.fr / demo1234");
+  console.log("Connexion avocat : demo-avocat@cabinet.fr / demo1234");
+}
+
+/** Cabinet d'avocats de démonstration : intake juridique, prospects, conflit d'intérêts. */
+async function seedAvocat() {
+  const tenant = await prisma.tenant.upsert({
+    where: { email: "demo-avocat@cabinet.fr" },
+    update: {},
+    create: {
+      nom: "Cabinet Legrand & Associés",
+      email: "demo-avocat@cabinet.fr",
+      passwordHash: hashPassword("demo1234"),
+      plan: "actif",
+      agent: {
+        create: {
+          nomCabinet: "Cabinet Legrand & Associés",
+          metier: "avocat",
+          nomProfessionnel: "Maître Claire Legrand",
+          specialite: "Droit du travail, Droit de la famille",
+          domainesDroit: "Droit du travail, Droit de la famille, Droit des affaires",
+          adresse: "8 place Vendôme, 75001 Paris",
+          horairesOuverture: "Du lundi au vendredi, de 9h à 18h30",
+          numeroTransfertHumain: "+33100000001",
+          emailNotification: "contact@legrand-associes.fr",
+          phraseAccueil:
+            "Cabinet de Maître Legrand, bonjour. Je suis l'assistant virtuel du cabinet, comment puis-je vous aider ?",
+          faqJson: JSON.stringify({
+            honoraires: "Première consultation 90 €, déductibles si le dossier est ouvert",
+            acces: "Métro Tuileries, cabinet au 3e étage",
+          }),
+          numeroEntrant: "+33900000001",
+          actif: true,
+          consultationPayante: true,
+          montantConsultationEur: 90,
+          lienPaiement: "https://buy.stripe.com/exemple-consultation",
+        },
+      },
+    },
+  });
+
+  const dejaSeede = await prisma.intake.count({ where: { tenantId: tenant.id } });
+  if (dejaSeede > 0) return;
+
+  await prisma.client.upsert({
+    where: { tenantId_telephone: { tenantId: tenant.id, telephone: "+33656789012" } },
+    update: {},
+    create: {
+      tenantId: tenant.id,
+      nom: "Moreau",
+      prenom: "Julie",
+      telephone: "+33656789012",
+      email: "julie.moreau@exemple.fr",
+      notes: "Dossier prud'hommes en cours, audience en septembre.",
+    },
+  });
+
+  await prisma.intake.create({
+    data: {
+      tenantId: tenant.id,
+      nom: "Petit",
+      prenom: "Antoine",
+      telephone: "+33667890123",
+      domaineDroit: "Droit du travail",
+      partieAdverse: "Société Techsun",
+      juridiction: "Conseil de prud'hommes de Paris",
+      echeance: "Audience le 15 septembre",
+      resume: "Licenciement contesté, souhaite être accompagné pour l'audience.",
+      potentiel: "fort",
+      statut: "rdv_pris",
+    },
+  });
+  await prisma.intake.create({
+    data: {
+      tenantId: tenant.id,
+      nom: "Garnier",
+      prenom: "Sophie",
+      telephone: "+33678901234",
+      domaineDroit: "Droit de la famille",
+      partieAdverse: "M. Garnier",
+      resume: "Divorce par consentement mutuel, première prise de contact.",
+      potentiel: "standard",
+      statut: "nouveau",
+    },
+  });
+  await prisma.intake.create({
+    data: {
+      tenantId: tenant.id,
+      nom: "Robert",
+      prenom: "Marc",
+      telephone: "+33689012345",
+      domaineDroit: "Droit du travail",
+      partieAdverse: "Julie Moreau",
+      resume: "Litige avec une salariée — conflit détecté, aucun rendez-vous pris.",
+      potentiel: "standard",
+      statut: "perdu",
+      conflitDetecte: true,
+    },
+  });
+
+  await prisma.appointment.create({
+    data: {
+      tenantId: tenant.id,
+      nom: "Petit",
+      prenom: "Antoine",
+      telephone: "+33667890123",
+      motif: "Consultation droit du travail — licenciement",
+      dateHeure: "2026-07-24 10:00",
+      praticien: "Maître Claire Legrand",
+      nouveauOuExistant: "nouveau",
+    },
+  });
+
+  await prisma.message.create({
+    data: {
+      tenantId: tenant.id,
+      canal: "sms",
+      destinataire: "+33667890123",
+      contenu:
+        "Cabinet Legrand & Associés : votre rendez-vous du 2026-07-24 10:00 est réservé. Il sera confirmé après règlement de la consultation (90 €) : https://buy.stripe.com/exemple-consultation",
+      type: "paiement",
+      statut: "simule",
+    },
+  });
+  await prisma.message.create({
+    data: {
+      tenantId: tenant.id,
+      canal: "interne",
+      destinataire: "cabinet",
+      contenu:
+        "Conflit d'intérêts détecté pendant un appel : la partie adverse citée (« Julie Moreau ») correspond à un client du cabinet. Le rendez-vous n'a pas été pris.",
+      type: "alerte",
+      statut: "envoye",
+    },
+  });
 }
 
 main()

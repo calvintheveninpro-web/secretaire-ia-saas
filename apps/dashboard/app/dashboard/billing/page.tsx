@@ -38,6 +38,8 @@ export default async function BillingPage({ searchParams }: { searchParams: { su
             <li>Agent IA vocal et écrit, disponible 24h/24 et 7j/7</li>
             <li>Prise, annulation et report de rendez-vous</li>
             <li>Fiches clients automatisées et journal des appels</li>
+            <li>Qualification juridique des prospects et détection des conflits d'intérêts</li>
+            <li>Rappels de rendez-vous par SMS et consultation payante en ligne</li>
             <li>Transfert vers un humain et détection des urgences</li>
             <li>Connecteurs (Google Calendar, Outlook, Doctolib…)</li>
             <li>Confirmations par SMS et par email</li>

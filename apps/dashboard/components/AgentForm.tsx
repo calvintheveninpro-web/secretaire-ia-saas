@@ -16,6 +16,13 @@ export function AgentForm({ initial }: { initial: any }) {
       .filter(Boolean),
   );
   const [nouvelleSpecialite, setNouvelleSpecialite] = useState("");
+  const [domaines, setDomaines] = useState<string[]>(
+    String(initial.domainesDroit ?? "")
+      .split(",")
+      .map((s: string) => s.trim())
+      .filter(Boolean),
+  );
+  const [nouveauDomaine, setNouveauDomaine] = useState("");
   const [saved, setSaved] = useState<null | boolean>(null);
   const [saving, setSaving] = useState(false);
 
@@ -34,6 +41,17 @@ export function AgentForm({ initial }: { initial: any }) {
     setSpecialites((list) => list.filter((x) => x !== s));
   }
 
+  function ajouterDomaine() {
+    const d = nouveauDomaine.trim();
+    if (!d || domaines.some((x) => x.toLowerCase() === d.toLowerCase())) return;
+    setDomaines((list) => [...list, d]);
+    setNouveauDomaine("");
+  }
+
+  function retirerDomaine(d: string) {
+    setDomaines((list) => list.filter((x) => x !== d));
+  }
+
   async function save() {
     setSaving(true);
     setSaved(null);
@@ -47,7 +65,12 @@ export function AgentForm({ initial }: { initial: any }) {
     const res = await fetch("/api/agent", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, specialite: specialites.join(", "), faqCabinet }),
+      body: JSON.stringify({
+        ...form,
+        specialite: specialites.join(", "),
+        domainesDroit: domaines.join(", "),
+        faqCabinet,
+      }),
     });
     setSaving(false);
     setSaved(res.ok);
@@ -159,6 +182,77 @@ export function AgentForm({ initial }: { initial: any }) {
           />
         </div>
       </div>
+
+      {form.metier === "avocat" && (
+        <div style={{ marginTop: 16, borderTop: "1px solid var(--border)", paddingTop: 4 }}>
+          <h3 style={{ marginBottom: 0 }}>Réglages du cabinet d'avocats</h3>
+          <div className="grid grid-2">
+            <div>
+              <label>Domaines de droit pratiqués (vous pouvez en ajouter plusieurs)</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input
+                  value={nouveauDomaine}
+                  placeholder="Ex. : Droit du travail"
+                  onChange={(e) => setNouveauDomaine(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      ajouterDomaine();
+                    }
+                  }}
+                />
+                <button className="btn secondary" type="button" onClick={ajouterDomaine}>
+                  Ajouter
+                </button>
+              </div>
+              {domaines.length > 0 && (
+                <div className="tags">
+                  {domaines.map((d) => (
+                    <span className="tag" key={d}>
+                      {d}
+                      <button type="button" onClick={() => retirerDomaine(d)} aria-label={`Retirer ${d}`}>
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+              <p className="muted" style={{ fontSize: 12, marginTop: 6 }}>
+                L'IA oriente les appels selon ces domaines et classe « hors périmètre » les demandes
+                que le cabinet ne traite pas.
+              </p>
+            </div>
+            <div>
+              <label>Première consultation payante</label>
+              <select
+                value={form.consultationPayante ? "oui" : "non"}
+                onChange={(e) => set("consultationPayante", e.target.value === "oui")}
+              >
+                <option value="non">Non — rendez-vous confirmé sans paiement</option>
+                <option value="oui">Oui — lien de paiement envoyé par SMS</option>
+              </select>
+              {form.consultationPayante && (
+                <div>
+                  <label>Montant de la consultation (euros)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={form.montantConsultationEur ?? ""}
+                    placeholder="Ex. : 90"
+                    onChange={(e) => set("montantConsultationEur", Number(e.target.value))}
+                  />
+                  <label>Lien de paiement Stripe (Payment Link)</label>
+                  <input
+                    value={form.lienPaiement ?? ""}
+                    placeholder="https://buy.stripe.com/..."
+                    onChange={(e) => set("lienPaiement", e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       <label>Phrase d'accueil</label>
       <textarea value={form.phraseAccueil ?? ""} onChange={(e) => set("phraseAccueil", e.target.value)} />
