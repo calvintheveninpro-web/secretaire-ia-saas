@@ -279,6 +279,19 @@ async function seedAvocat() {
       statut: "envoye",
     },
   });
+
+  await prisma.emailMessage.create({
+    data: {
+      tenantId: tenant.id,
+      deEmail: "antoine.petit@exemple.fr",
+      objet: "Pièces à apporter pour la consultation",
+      contenu:
+        "Bonjour,\n\nJ'ai rendez-vous jeudi avec Maître Legrand. Quels documents dois-je apporter concernant mon licenciement ?\n\nMerci,\nAntoine Petit",
+      brouillon:
+        "Bonjour,\n\nMerci pour votre message. Pour votre consultation, merci d'apporter : votre contrat de travail, la lettre de licenciement, vos trois derniers bulletins de salaire et toute correspondance échangée avec votre employeur.\n\nNous restons à votre disposition.\n\nBien cordialement,\nL'assistant du cabinet Cabinet Legrand & Associés",
+      statut: "nouveau",
+    },
+  });
 }
 
 main()
