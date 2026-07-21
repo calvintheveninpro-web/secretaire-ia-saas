@@ -14,7 +14,9 @@ export default async function DashboardLayout({ children }: { children: ReactNod
         <a href="/dashboard/agent">Mon agent</a>
         <a href="/dashboard/calls">Appels</a>
         <a href="/dashboard/appointments">Rendez-vous</a>
+        <a href="/dashboard/prospects">Prospects</a>
         <a href="/dashboard/clients">Clients</a>
+        <a href="/dashboard/messages">Messages</a>
         <a href="/dashboard/connectors">Connecteurs</a>
         <a href="/dashboard/billing">Abonnement</a>
         <span className="spacer" />

@@ -25,6 +25,10 @@ function toAgentConfig(agent: any) {
     faqCabinet: safeJson(agent.faqJson),
     numeroEntrant: agent.numeroEntrant ?? undefined,
     actif: agent.actif,
+    domainesDroit: agent.domainesDroit ?? undefined,
+    consultationPayante: agent.consultationPayante,
+    montantConsultationEur: agent.montantConsultationEur ?? undefined,
+    lienPaiement: agent.lienPaiement ?? undefined,
   };
 }
 
@@ -69,6 +73,11 @@ export async function PUT(req: Request) {
       faqJson: JSON.stringify(body.faqCabinet ?? {}),
       numeroEntrant: body.numeroEntrant || null,
       actif: body.actif ?? true,
+      domainesDroit: body.domainesDroit || null,
+      consultationPayante: Boolean(body.consultationPayante),
+      montantConsultationEur:
+        Number(body.montantConsultationEur) > 0 ? Number(body.montantConsultationEur) : null,
+      lienPaiement: body.lienPaiement || null,
     },
   });
   return NextResponse.json(toAgentConfig(agent));

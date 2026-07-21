@@ -18,6 +18,8 @@ export function buildSystemPrompt(config: AgentConfig, promptJson: PromptJson): 
   const urgences = promptJson.gestion_urgences ?? {};
   const annulation = promptJson.gestion_annulation_report ?? {};
   const horsHoraires = promptJson.comportement_hors_horaires ?? {};
+  const intake = promptJson.intake_juridique ?? {};
+  const estAvocat = config.metier === "avocat";
 
   const faq = config.faqCabinet ?? {};
   const faqLignes = Object.entries(faq)
@@ -50,10 +52,27 @@ export function buildSystemPrompt(config: AgentConfig, promptJson: PromptJson): 
     `# INFORMATIONS DU CABINET (réponds directement à ces questions, sans transférer)`,
     `- Cabinet : ${config.nomCabinet}`,
     `- Professionnel : ${config.nomProfessionnel}${config.specialite ? ` (${config.specialite})` : ""}`,
+    estAvocat && config.domainesDroit ? `- Domaines de droit pratiqués : ${config.domainesDroit}` : "",
     `- Adresse : ${config.adresse ?? "non renseignée"}`,
     `- Horaires : ${config.horairesOuverture}`,
     faqLignes ? `Autres informations pratiques :\n${faqLignes}` : ``,
     ``,
+    ...(estAvocat
+      ? [
+          `# INTAKE JURIDIQUE (qualification du prospect)`,
+          intake.principe ?? "",
+          `Informations à recueillir :`,
+          ...Object.values(intake.informations_intake ?? {}).map((v) => `- ${v}`),
+          `Conflit d'intérêts : ${intake.conflit_interets ?? ""}`,
+          `Scoring : ${intake.scoring ?? ""}`,
+          `Urgences juridiques : ${intake.urgences_juridiques ?? ""}`,
+          `Confidentialité : ${intake.confidentialite ?? ""}`,
+          config.consultationPayante && config.montantConsultationEur
+            ? `Consultation payante : la première consultation coûte ${config.montantConsultationEur} €. Annonce ce montant avant de confirmer le rendez-vous et précise qu'un lien de paiement sécurisé sera envoyé par SMS.`
+            : "",
+          ``,
+        ]
+      : []),
     `# DÉROULÉ DE LA CONVERSATION`,
     ...Object.values(deroule).map((s) => `- ${fill(String(s), config)}`),
     ``,

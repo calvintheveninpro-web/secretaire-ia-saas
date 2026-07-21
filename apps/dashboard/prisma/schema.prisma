@@ -25,6 +25,8 @@ model Tenant {
   calls                Call[]
   appointments         Appointment[]
   clients              Client[]
+  intakes              Intake[]
+  messages             Message[]
 }
 
 model Agent {
@@ -47,6 +49,10 @@ model Agent {
   numeroEntrant          String?  @unique
   actif                  Boolean  @default(true)
   connecteursJson        String   @default("{}") // État des connecteurs (Google Calendar, Outlook...)
+  domainesDroit          String?  // Avocats : domaines pratiqués, séparés par des virgules
+  consultationPayante    Boolean  @default(false) // Envoyer un lien de paiement à la prise de RDV
+  montantConsultationEur Int?     // Montant de la première consultation
+  lienPaiement           String?  // Lien de paiement Stripe (Payment Link) du cabinet
 }
 
 // Fiche client générée automatiquement à partir des rendez-vous pris par l'IA.
@@ -92,5 +98,38 @@ model Appointment {
   praticien         String?
   nouveauOuExistant String?
   statut            String   @default("confirme") // confirme | annule | reporte
+  rappelEnvoye      Boolean  @default(false) // SMS de rappel 24 h avant déjà envoyé
   createdAt         DateTime @default(now())
+}
+
+// Fiche de qualification d'un prospect (intake juridique), créée par l'IA pendant l'appel.
+model Intake {
+  id             String   @id @default(cuid())
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId       String
+  nom            String?
+  prenom         String?
+  telephone      String
+  domaineDroit   String? // famille | travail | penal | affaires | immobilier...
+  partieAdverse  String? // Sert à la détection de conflits d'intérêts
+  juridiction    String?
+  echeance       String? // Date d'audience ou délai critique évoqué
+  resume         String?
+  potentiel      String   @default("standard") // fort | standard | hors_perimetre
+  statut         String   @default("nouveau") // nouveau | rdv_pris | converti | perdu
+  conflitDetecte Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+// Journal des SMS et alertes émis par la plateforme (envoyés ou simulés sans fournisseur).
+model Message {
+  id           String   @id @default(cuid())
+  tenant       Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId     String
+  canal        String   @default("sms") // sms | email | interne
+  destinataire String
+  contenu      String
+  type         String   @default("confirmation") // confirmation | rappel | alerte | paiement | notification
+  statut       String   @default("simule") // envoye | simule | echec
+  createdAt    DateTime @default(now())
 }

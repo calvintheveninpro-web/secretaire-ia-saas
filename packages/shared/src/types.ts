@@ -25,6 +25,12 @@ export interface AgentConfig {
   /** Numéro de téléphone Twilio qui route les appels vers cet agent. */
   numeroEntrant?: string;
   actif: boolean;
+  /** Avocats : domaines de droit pratiqués par le cabinet (séparés par des virgules). */
+  domainesDroit?: string;
+  /** Envoyer un lien de paiement à la prise de rendez-vous (première consultation payante). */
+  consultationPayante?: boolean;
+  montantConsultationEur?: number;
+  lienPaiement?: string;
 }
 
 export type ToolName =
@@ -36,6 +42,8 @@ export type ToolName =
   | "take_message"
   | "send_notification"
   | "send_confirmation"
+  | "check_conflict"
+  | "save_intake"
   | "end_call";
 
 export interface ToolCall {

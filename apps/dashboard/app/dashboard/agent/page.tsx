@@ -21,6 +21,10 @@ export default async function AgentPage() {
     phraseAccueil: a.phraseAccueil,
     faqCabinet: JSON.parse(a.faqJson || "{}"),
     actif: a.actif,
+    domainesDroit: a.domainesDroit ?? "",
+    consultationPayante: a.consultationPayante,
+    montantConsultationEur: a.montantConsultationEur ?? "",
+    lienPaiement: a.lienPaiement ?? "",
   };
 
   return (

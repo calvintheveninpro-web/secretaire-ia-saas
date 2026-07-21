@@ -33,7 +33,7 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
     );
   }
 
-  const [rdvs, calls] = await Promise.all([
+  const [rdvs, calls, intakes] = await Promise.all([
     prisma.appointment.findMany({
       where: { tenantId: tenant.id, telephone: client.telephone },
       orderBy: { createdAt: "desc" },
@@ -42,6 +42,11 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
     prisma.call.findMany({
       where: { tenantId: tenant.id, fromNumber: client.telephone },
       orderBy: { startedAt: "desc" },
+      take: 50,
+    }),
+    prisma.intake.findMany({
+      where: { tenantId: tenant.id, telephone: client.telephone },
+      orderBy: { createdAt: "desc" },
       take: 50,
     }),
   ]);
@@ -104,6 +109,39 @@ export default async function ClientDetailPage({ params }: { params: { id: strin
           </tbody>
         </table>
       </div>
+
+      {intakes.length > 0 && (
+        <div className="card" style={{ marginTop: 16 }}>
+          <h3>Qualifications juridiques</h3>
+          <table style={{ marginTop: 8 }}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Domaine</th>
+                <th>Partie adverse</th>
+                <th>Échéance</th>
+                <th>Résumé</th>
+              </tr>
+            </thead>
+            <tbody>
+              {intakes.map((i) => (
+                <tr key={i.id}>
+                  <td>{new Date(i.createdAt).toLocaleDateString("fr-FR")}</td>
+                  <td>{i.domaineDroit ?? "—"}</td>
+                  <td>
+                    {i.partieAdverse ?? "—"}
+                    {i.conflitDetecte && (
+                      <div><span className="badge warn">Conflit détecté</span></div>
+                    )}
+                  </td>
+                  <td>{i.echeance ?? "—"}</td>
+                  <td className="muted">{i.resume ?? "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       <div className="card" style={{ marginTop: 16 }}>
         <h3>Historique des appels</h3>
