@@ -7,6 +7,7 @@ import { upsertClientFromBooking } from "@/lib/clients";
 import { adverseEstClient, appelantEstAdverse } from "@/lib/conflicts";
 import { sendSms, recordAlert } from "@/lib/sms";
 import { googleConnecte, creneauxLibres, creerEvenement } from "@/lib/google";
+import { cancelUrl } from "@/lib/booking";
 
 export async function POST(req: Request) {
   const { tenantId, tool } = await req.json();
@@ -58,10 +59,10 @@ export async function POST(req: Request) {
         const agent = await prisma.agent.findUnique({ where: { tenantId } });
         const telephone = str(args.telephone);
         if (telephone) {
-          let contenu = `${agent?.nomCabinet ?? "Votre cabinet"} : votre rendez-vous du ${str(args.date_heure)} est confirmé. Répondez ANNULER pour annuler.`;
+          let contenu = `${agent?.nomCabinet ?? "Votre cabinet"} : votre rendez-vous du ${str(args.date_heure)} est confirmé. Pour annuler : ${cancelUrl(rdv.id)}`;
           let paiement = false;
           if (agent?.consultationPayante && agent.lienPaiement) {
-            contenu = `${agent.nomCabinet} : votre rendez-vous du ${str(args.date_heure)} est réservé. Il sera confirmé après règlement de la consultation${agent.montantConsultationEur ? ` (${agent.montantConsultationEur} €)` : ""} : ${agent.lienPaiement}`;
+            contenu = `${agent.nomCabinet} : votre rendez-vous du ${str(args.date_heure)} est réservé. Il sera confirmé après règlement de la consultation${agent.montantConsultationEur ? ` (${agent.montantConsultationEur} €)` : ""} : ${agent.lienPaiement} — Pour annuler : ${cancelUrl(rdv.id)}`;
             paiement = true;
           }
           await sendSms(tenantId, telephone, contenu, paiement ? "paiement" : "confirmation");
