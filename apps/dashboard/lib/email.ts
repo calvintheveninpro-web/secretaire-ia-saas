@@ -1,7 +1,7 @@
 // Envoi d'emails via Brevo quand BREVO_API_KEY est configurée.
 // Sans clé, l'email est journalisé en mode « simulé » : le contenu apparaît
 // dans l'onglet Messages du tableau de bord, rien n'est envoyé.
-// (Mise en service Brevo : envoi transactionnel activé en production.)
+// (Mise en service Brevo : envoi transactionnel activé en production — variables sur l'environnement Production.)
 
 import { prisma } from "./db";
 import type { TypeMessage } from "./sms";
