@@ -23,6 +23,7 @@ export async function sendEmail(
   type: TypeMessage,
 ): Promise<{ statut: "envoye" | "simule" | "echec" }> {
   let statut: "envoye" | "simule" | "echec" = "simule";
+  let erreur = "";
 
   if (emailConfigured() && destinataire) {
     try {
@@ -39,9 +40,16 @@ export async function sendEmail(
           textContent: contenu,
         }),
       });
-      statut = res.ok ? "envoye" : "echec";
-    } catch {
+      if (res.ok) {
+        statut = "envoye";
+      } else {
+        statut = "echec";
+        // On journalise la raison exacte renvoyée par Brevo (visible dans l'onglet Messages).
+        erreur = (await res.text().catch(() => "")).slice(0, 500);
+      }
+    } catch (e: any) {
       statut = "echec";
+      erreur = String(e?.message ?? e).slice(0, 500);
     }
   }
 
@@ -50,7 +58,7 @@ export async function sendEmail(
       tenantId,
       canal: "email",
       destinataire,
-      contenu: `${objet}\n\n${contenu}`,
+      contenu: erreur ? `${objet}\n\n${contenu}\n\n[Erreur Brevo] ${erreur}` : `${objet}\n\n${contenu}`,
       type,
       statut,
     },
